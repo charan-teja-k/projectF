@@ -15,6 +15,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 import os
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
 app = Flask(__name__)
 
@@ -43,7 +46,7 @@ nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
 
 client = OpenAI(
-    api_key="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",  # Replace with your OpenAI API key
+    api_key=os.getenv("OPENAI_API_KEY"),  # Ensure you have set this in your .env file
     base_url="https://openrouter.ai/api/v1"
 )
 
