@@ -43,7 +43,7 @@ nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
 
 client = OpenAI(
-    api_key="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",  # Replace with your OpenAI API key
+    api_key="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",  # Replace with your OpenAI API key
     base_url="https://openrouter.ai/api/v1"
 )
 
