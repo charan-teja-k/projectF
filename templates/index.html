@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback Sentiment Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #052659;
+            --primary-dark: #021024;
+            --accent: #5483B3;
+            --accent-light: #7DA0CA;
+            --background: #C1E8FF;
+            --section-bg: #fff;
+            --section-inactive-bg: #f0f4fa;
+            --text: #021024;
+            --input-bg: #f7fafc;
+            --input-border: #5483B3;
+        }
+
+        body.dark-mode {
+            --primary: #2c5379;
+            --primary-dark: #7DA0CA;
+            --accent: #052659;
+            --accent-light: #021024;
+            --background: #0d1a26;
+            --section-bg: #1a2b3c;
+            --section-inactive-bg: #12202f;
+            --text: #e0eafc;
+            --input-bg: #2a3c4d;
+            --input-border: #052659;
+            color: var(--text);
+        }
+        body.dark-mode header {
+            background: var(--primary);
+            color: #fff;
+        }
+        body.dark-mode .profile-avatar {
+            background: linear-gradient(135deg, #021024 60%, #052659 100%);
+            border: 2.5px solid var(--accent-light);
+            outline: 2.5px solid var(--background);
+        }
+        body.dark-mode .profile-avatar:hover, body.dark-mode .profile-avatar:focus {
+            box-shadow: 0 4px 18px 4px var(--accent), 0 0 0 4px var(--background);
+            outline: 2.5px solid var(--accent-light);
+            border-color: var(--accent-light);
+        }
+        body.dark-mode .profile-dropdown {
+            background: var(--section-bg);
+            border: 2px solid var(--accent);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        body.dark-mode .profile-email {
+            color: var(--text);
+        }
+        body.dark-mode .profile-menu-list a {
+            color: var(--text);
+            border: 1.5px solid var(--primary-dark);
+            background: var(--input-bg);
+        }
+        body.dark-mode .profile-menu-list a:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        body.dark-mode main {
+            background: var(--section-bg);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+        }
+        body.dark-mode .toggle-section {
+            border: 1.5px solid var(--accent);
+            background: var(--section-inactive-bg);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .toggle-section.active {
+            background: var(--section-bg);
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.2), 0 2px 12px rgba(0,0,0,0.15);
+            outline: 2px solid var(--accent-light);
+        }
+        body.dark-mode .section-header {
+            color: var(--text);
+            border-bottom: 2px solid var(--primary-dark);
+        }
+        body.dark-mode .custom-file-label {
+            background-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .custom-file-label:hover, body.dark-mode .custom-file-label:focus {
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+        body.dark-mode .file-name {
+            color: var(--text);
+        }
+        body.dark-mode input[type="text"] {
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            color: var(--text);
+        }
+        body.dark-mode input[type="text"]:focus {
+            border: 2px solid var(--accent-light);
+        }
+        body.dark-mode button {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        body.dark-mode button:hover:not(:disabled) {
+            background: var(--primary);
+        }
+        body.dark-mode .result-section {
+            background: var(--section-inactive-bg);
+            border: 1.5px solid var(--primary-dark);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .result-section h3 {
+            color: var(--text);
+        }
+        body.dark-mode .ai-summary {
+            background: linear-gradient(90deg, var(--accent), var(--primary-dark));
+            color: #fff;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .download-btn {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .download-btn:hover {
+            background: var(--accent-light);
+        }
+        body.dark-mode footer {
+            background: var(--primary);
+            color: #fff;
+        }
+        body.dark-mode #backToTop {
+            background: var(--accent);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+        }
+        body.dark-mode #backToTop:hover {
+            background: var(--primary);
+        }
+        body.dark-mode .flash-success { background: #3c6e4d; color: #d4edda; border: 1.5px solid #28a745; }
+        body.dark-mode .flash-danger  { background: #8f3a3a; color: #f8d7da; border: 1.5px solid #dc3545; }
+        body.dark-mode .flash-info    { background: #315e8c; color: #d1ecf1; border: 1.5px solid #17a2b8; }
+        body.dark-mode .flash-warning { background: #8f773a; color: #fff3cd; border: 1.5px solid #ffc107; }
+
+        /* Dark Mode Toggle Switch */
+        .dark-mode-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.25em 0.6em;
+            margin-bottom: 0.18em;
+            font-size: 0.5em;
+            font-weight: 500;
+            line-height: 1.2;
+            color: #052659;
+            background: #f7fafc;
+            border: 1.5px solid var(--accent-light);
+            border-radius: 0.4em;
+            cursor: pointer;
+            transition: background 0.16s, color 0.16s, border 0.16s;
+        }
+        body.dark-mode .dark-mode-toggle {
+            color: var(--text);
+            background: var(--input-bg);
+            border: 1.5px solid var(--primary-dark);
+        }
+        .dark-mode-toggle:hover {
+            background: #e0eafc;
+        }
+        body.dark-mode .dark-mode-toggle:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+        body.dark-mode input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--accent);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(14px);
+            -ms-transform: translateX(14px);
+            transform: translateX(14px);
+        }
+
+        /* Rest of your existing CSS */
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--background);
+            color: var(--text);
+            font-family: 'Arial', sans-serif;
+            font-size: 0.75rem;
+            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+        header {
+            background: var(--primary);
+            color: #fff;
+            padding: 2rem 1rem 1rem 1rem;
+            text-align: center;
+            letter-spacing: 2px;
+            font-size: 2.2rem;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(2,16,36,0.08);
+            position: relative;
+        }
+        /* Profile Menu Styles */
+        .profile-menu-container {
+            position: absolute;
+            top: 0.7em;
+            right: 1em;
+            z-index: 99;
+            user-select: none;
+        }
+        .profile-avatar {
+            background: linear-gradient(135deg, #052659 60%, #5483B3 100%);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 2px 12px 2px #7DA0CA, 0 0 0 3px #fff;
+            cursor: pointer;
+            transition: box-shadow 0.2s, border 0.2s;
+            border: 2.5px solid var(--accent);
+            outline: 2.5px solid #fff;
+        }
+        .profile-avatar:hover, .profile-avatar:focus {
+            box-shadow: 0 4px 18px 4px #5483B3, 0 0 0 4px #fff;
+            outline: 2.5px solid var(--primary);
+            border-color: var(--primary);
+        }
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            top: 42px;
+            right: 0;
+            background: #fff;
+            border-radius: 0.8em;
+            box-shadow: 0 4px 24px rgba(5,38,89,0.17);
+            min-width: 160px;
+            padding: 0.7em 0.3em 0.3em 0.3em;
+            animation: fadeInProfile 0.17s;
+            border: 2px solid var(--accent);
+        }
+        @keyframes fadeInProfile {
+            from { opacity: 0; transform: translateY(-8px);}
+            to   { opacity: 1; transform: translateY(0);}
+        }
+        .profile-dropdown.active {
+            display: block;
+        }
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            border-bottom: 1px solid #e0eafc;
+            padding-bottom: 0.4em;
+            margin-bottom: 0.4em;
+        }
+        .profile-avatar-dropdown {
+            width: 26px;
+            height: 26px;
+            font-size: 0.85em;
+            background: linear-gradient(135deg, #5483B3 60%, #052659 100%);
+            border: 2px solid var(--accent);
+            outline: 1.5px solid #fff;
+            box-shadow: 0 1px 6px 1px #7DA0CA;
+        }
+        .profile-email {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #052659;
+            word-break: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 110px;
+            display: block;
+        }
+        .profile-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1em;
+            margin-top: 0.1em;
+        }
+        .profile-menu-list a {
+            color: #052659;
+            text-decoration: none;
+            font-size: 0.5em;
+            border-radius: 0.4em;
+            padding: 0.25em 0.6em;
+            transition: background 0.16s, color 0.16s, border 0.16s;
+            font-weight: 500;
+            line-height: 1.2;
+            border: 1.5px solid var(--accent-light);
+            margin-bottom: 0.18em;
+            background: #f7fafc;
+            box-sizing: border-box;
+        }
+        .profile-menu-list a:hover {
+            background: #5483B3;
+            color: #fff;
+            border-color: var(--accent);
+        }
+        @media (max-width: 600px) {
+            .profile-menu-container {
+                top: 0.3em;
+                right: 0.3em;
+            }
+            .profile-dropdown {
+                min-width: 110px;
+                padding: 0.3em 0.1em 0.1em 0.1em;
+            }
+            .profile-email {
+                max-width: 70px;
+                font-size: 0.68em;
+            }
+            .profile-menu-list a {
+                font-size: 0.75em;
+                padding: 0.18em 0.3em;
+            }
+        }
+        main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+            padding: 2rem 5vw;
+            max-width: 1300px;
+            margin: 3rem auto;
+            background: rgba(255,255,255,0.85);
+            border-radius: 1.4rem;
+            box-shadow: 0 4px 24px rgba(5,38,89,0.08);
+        }
+        .toggle-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        .toggle-section {
+            position: relative;
+            border-radius: 1rem;
+            border: 1.5px solid var(--primary-dark);
+            background: var(--section-bg);
+            box-shadow: 0 2px 12px rgba(5,38,89,0.06);
+            transition:
+                box-shadow 0.35s cubic-bezier(.4,2,.6,1),
+                background 0.35s cubic-bezier(.4,2,.6,1),
+                transform 0.25s cubic-bezier(.4,2,.6,1),
+                opacity 0.3s;
+            cursor: pointer;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .toggle-section.inactive {
+            background: var(--section-inactive-bg);
+            opacity: 0.7;
+            box-shadow: none;
+            transform: scale(0.97);
+            filter: grayscale(0.15) blur(1px);
+            z-index: 0;
+        }
+        .toggle-section.active {
+            background: var(--section-bg);
+            opacity: 1;
+            box-shadow: 0 8px 32px 0 rgba(84,131,179,0.18), 0 2px 12px rgba(5,38,89,0.09);
+            transform: scale(1.025);
+            filter: none;
+            z-index: 2;
+        }
+        .toggle-section:focus-within,
+        .toggle-section.active {
+            outline: 2px solid var(--accent);
+            outline-offset: 1px;
+        }
+        .section-header {
+            user-select: none;
+            padding: 1.5rem 1.5rem 1rem 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--accent-light);
+            margin-bottom: 1rem;
+            background: transparent;
+            transition: background 0.2s;
+        }
+        .section-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0 1.5rem 2rem 1.5rem;
+            transition: opacity 0.3s;
+        }
+        .toggle-section.inactive .section-content {
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.5;
+        }
+        .toggle-section.active .section-content {
+            pointer-events: auto;
+            user-select: auto;
+            opacity: 1;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: 320px;
+            width: 100%;
+        }
+        input[type="file"] {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .custom-file-label {
+            display: inline-block;
+            padding: 0.7rem 1.5rem;
+            background-color: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 6px rgba(84,131,179,0.12);
+        }
+        .custom-file-label:hover,
+        .custom-file-label:focus {
+            background-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 8px var(--primary);
+        }
+        .file-name {
+            font-size: 0.9rem;
+            color: var(--text);
+            font-style: italic;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 150px;
+        }
+        input[type="text"] {
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            color: var(--text);
+            padding: 0.7rem 1rem;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            transition: border 0.2s;
+        }
+        input[type="text"]:focus {
+            border: 2px solid var(--accent);
+            outline: none;
+        }
+        button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.9rem 1.2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 8px rgba(84,131,179,0.10);
+            position: relative;
+            overflow: hidden;
+        }
+        button:hover:not(:disabled) {
+            background: var(--primary);
+        }
+        .button-loading {
+            pointer-events: none;
+            opacity: 0.85;
+            background: var(--primary) !important;
+            color: #fff !important;
+            transition: background 0.3s, color 0.3s;
+        }
+        .button-loading .spinner {
+            display: inline-block;
+            width: 1.3em;
+            height: 1.3em;
+            border: 3px solid #fff;
+            border-top: 3px solid var(--accent-light);
+            border-radius: 50%;
+            animation: spinBtn 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 0.7em;
+        }
+        @keyframes spinBtn {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+        .result-section {
+            margin-top: 2.5rem;
+            background: #eaf6ff;
+            border: 1.5px solid var(--primary);
+            border-radius: 1rem;
+            padding: 2rem 1.5rem;
+            box-shadow: 0 2px 12px rgba(5,38,89,0.07);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .ai-summary {
+            background: linear-gradient(90deg, var(--primary), var(--accent-light));
+            color: #fff;
+            font-size: 1.15rem;
+            font-weight: bold;
+            border-radius: 0.7rem;
+            padding: 1.2rem 1.5rem;
+            margin: 1.2rem 0 2rem 0;
+            box-shadow: 0 2px 12px rgba(5,38,89,0.08);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+        }
+        .download-btn {
+            background: var(--primary-dark);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(5,38,89,0.10);
+            cursor: pointer;
+        }
+        .download-btn:hover {
+            background: var(--accent);
+        }
+        @media (max-width: 900px) {
+            .toggle-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+        @media (max-width: 600px) {
+            header {
+                font-size: 1.3rem;
+                padding: 1.2rem 0.5rem;
+            }
+            main {
+                padding: 1rem 0.5rem;
+                margin: 1rem 0;
+            }
+            .toggle-section {
+                padding: 1.2rem 0.7rem;
+            }
+            .ai-summary {
+                font-size: 1rem;
+                padding: 1rem 0.7rem;
+            }
+        }
+        footer {
+            background: var(--primary-dark);
+            color: #fff;
+            text-align: center;
+            padding: 1rem 0;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            box-shadow: 0 -2px 8px rgba(5,38,89,0.08);
+        }
+        /* Flash Messages */
+        #flash-messages {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            min-width: 280px;
+            max-width: 90vw;
+        }
+        .flash {
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.7rem;
+            font-weight: 600;
+            box-shadow: 0 2px 12px rgba(5,38,89,0.10);
+            font-size: 1rem;
+            opacity: 0.97;
+            animation: fadeInFlash 0.3s;
+        }
+        .flash-success { background: #c1f7c2; color: #205c20; border: 1.5px solid #58b958; }
+        .flash-danger  { background: #ffe0e0; color: #a40000; border: 1.5px solid #ff4d4d; }
+        .flash-info    { background: #eaf6ff; color: #052659; border: 1.5px solid #5483B3; }
+        .flash-warning { background: #fff3cd; color: #856404; border: 1.5px solid #ffe066; }
+        @keyframes fadeInFlash {
+            from { opacity: 0; transform: translateY(-10px);}
+            to   { opacity: 0.97; transform: translateY(0);}
+        }
+        /* Back to Top Button */
+        #backToTop {
+            position: fixed;
+            bottom: 2.5rem;
+            right: 2.5rem;
+            z-index: 999;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(5,38,89,0.18);
+            opacity: 0.85;
+            transition: background 0.2s, opacity 0.2s;
+            display: none;
+        }
+        #backToTop:hover {
+            background: var(--accent);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Feedback Sentiment Analysis
+        {% if current_user.is_authenticated %}
+        <div class="profile-menu-container">
+            <div class="profile-avatar" id="profileAvatar">
+                <span>{{ current_user.email[0]|upper }}</span>
+            </div>
+            <div class="profile-dropdown" id="profileDropdown">
+                <div class="profile-info">
+                    <div class="profile-avatar profile-avatar-dropdown">
+                        <span>{{ current_user.email[0]|upper }}</span>
+                    </div>
+                    <div class="profile-email">{{ current_user.email }}</div>
+                </div>
+                <div class="profile-menu-list">
+                    <a href="{{ url_for('change_password') }}">Change Password</a>
+                    <div class="dark-mode-toggle" id="darkModeToggle">
+                        <span>Dark Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="darkModeCheckbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+    </header>
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div id="flash-messages">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <div class="toggle-container">
+            <section class="toggle-section {% if active_section != 'csv' %}inactive{% else %}active{% endif %}" id="csv-section" tabindex="0">
+                <div class="section-header">
+                    1. Upload Feedback file
+                </div>
+                <div class="section-content">
+                    {% if error %}
+                        <div style="color:red; margin-bottom:1rem;">{{ error }}</div>
+                    {% endif %}
+                    <form action="/" method="POST" enctype="multipart/form-data" id="upload-form">
+                        <div class="file-input-wrapper">
+                            <input type="file" name="file" id="file-upload" accept=".csv,.xls,.xlsx,.pdf" required>
+                            <label for="file-upload" class="custom-file-label">Choose CSV, Excel, or PDF file</label>
+                            <span class="file-name" aria-live="polite"></span>
+                        </div>
+                        <button type="submit"><span class="btn-text">Analyze Sentiment</span></button>
+                    </form>
+                    {% if show_result %}
+                    <div class="result-section">
+                        <h3>Sentiment Analysis Results</h3>
+                        <canvas id="starChart" width="600" height="350"></canvas>
+                        <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap: wrap;">
+                            <div class="ai-summary">
+                                <span>AI Summary:</span>
+                                <br>
+                                {{ summary }}
+                            </div>
+                            {% if feedback_list %}
+                            <div>
+                                <label for="sentiment-filter" style="font-weight:600; color:var(--primary); margin-right:0.5em;">Filter:</label>
+                                <select id="sentiment-filter" style="padding:0.5em 1em; border-radius:0.4em; border:1.5px solid var(--accent); font-size:1em;">
+                                    <option value="all">All</option>
+                                    <option value="Positive">Positive</option>
+                                    <option value="Negative">Negative</option>
+                                    <option value="Neutral">Neutral</option>
+                                </select>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if feedback_list %}
+                        <div id="filtered-feedbacks" style="margin:1.5em 0 0 0; width:100%; max-width:700px;"></div>
+                        {% endif %}
+                        <div style="margin-top:1em;">
+                            <label for="download-format" style="font-weight:600; color:var(--primary); margin-right:0.5em;">Download as:</label>
+                            <select id="download-format" style="padding:0.5em 1em; border-radius:0.4em; border:1.5px solid var(--accent); font-size:1em;">
+                                <option value="pdf">PDF</option>
+                                <option value="csv">CSV</option>
+                                <option value="excel">Excel</option>
+                            </select>
+                            <button class="download-btn" id="download-btn" type="button">Download</button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            <section class="toggle-section {% if active_section != 'manual' %}inactive{% else %}active{% endif %}" id="manual-section" tabindex="0">
+                <div class="section-header">
+                    2. Enter Feedback Manually
+                </div>
+                <div class="section-content">
+                    {% if single_error %}
+                        <div style="color:red; margin-bottom:1rem;">{{ single_error }}</div>
+                    {% endif %}
+                    <form action="/analyze" method="POST">
+                        <input type="text" name="feedback" placeholder="Type your feedback..." required size="50" value="{{ single_feedback or '' }}">
+                        <button type="submit"><span class="btn-text">Analyze This Feedback</span></button>
+                    </form>
+                    {% if show_single_result %}
+                    <div class="result-section" style="margin-top:2rem;">
+                        <h3>Single Feedback Result</h3>
+                        <p><strong>Feedback:</strong> {{ single_feedback }}</p>
+                        {% if show_corrected %}
+                        <p><strong>Corrected:</strong> {{ single_corrected }}</p>
+                        {% endif %}
+                        <p><strong>Sentiment:</strong> {{ single_sentiment }} {{ single_emoji }}</p>
+                        <p><strong>Stars:</strong> {{ single_stars }} ⭐</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer>
+        &copy; 2025 Feedback Analyzer &mdash; Powered by Sentiment AI
+    </footer>
+    <button id="backToTop" title="Back to Top" style="display:none;">↑ Top</button>
+    <script>
+        // Profile menu dropdown logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatar = document.getElementById('profileAvatar');
+            const dropdown = document.getElementById('profileDropdown');
+            if (avatar && dropdown) {
+                avatar.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('active');
+                });
+                document.addEventListener('click', function(e) {
+                    if (dropdown.classList.contains('active')) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+                dropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+
+            // Dark Mode Toggle Logic
+            const darkModeToggle = document.getElementById('darkModeCheckbox');
+            const body = document.body;
+
+            // Check for saved dark mode preference
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+        });
+
+        // Custom file input label
+        const fileInput = document.getElementById('file-upload');
+        const fileNameSpan = document.querySelector('.file-name');
+        if (fileInput) {
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    fileNameSpan.textContent = fileInput.files[0].name;
+                } else {
+                    fileNameSpan.textContent = '';
+                }
+            });
+        }
+
+        // Section toggling logic
+        function activateSectionById(sectionId) {
+            document.querySelectorAll('.toggle-section').forEach(sec => {
+                sec.classList.remove('active');
+                sec.classList.add('inactive');
+            });
+            const activeSec = document.getElementById(sectionId);
+            activeSec.classList.add('active');
+            activeSec.classList.remove('inactive');
+        }
+
+        document.querySelectorAll('.toggle-section').forEach(section => {
+            section.addEventListener('click', function(e) {
+                if (
+                    e.target.tagName === 'INPUT' ||
+                    e.target.tagName === 'BUTTON' ||
+                    e.target.tagName === 'LABEL' ||
+                    e.target.closest('form')
+                ) return;
+                activateSectionById(this.id);
+            });
+            section.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    activateSectionById(this.id);
+                }
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', function() {
+            var activeSection = "{{ active_section or 'csv' }}";
+            activateSectionById(activeSection + '-section');
+        });
+
+        // Button loading spinner logic
+        function setButtonLoading(btn, loadingText) {
+            btn.disabled = true;
+            btn.classList.add('button-loading');
+            let textSpan = btn.querySelector('.btn-text');
+            if (textSpan) {
+                textSpan.innerHTML = '<span class="spinner"></span>' + loadingText;
+            }
+        }
+
+        // CSV Form
+        const csvForm = document.getElementById('upload-form');
+        if (csvForm) {
+            csvForm.addEventListener('submit', function(e) {
+                const btn = csvForm.querySelector('button[type="submit"]');
+                setButtonLoading(btn, 'Analyzing...');
+            });
+        }
+
+        // Manual Feedback Form
+        const manualForm = document.querySelector('form[action="/analyze"]');
+        if (manualForm) {
+            manualForm.addEventListener('submit', function(e) {
+                const btn = manualForm.querySelector('button[type="submit"]');
+                setButtonLoading(btn, 'Analyzing...');
+            });
+        }
+
+        // Download button logic
+        document.getElementById('download-btn')?.addEventListener('click', function() {
+            const format = document.getElementById('download-format').value;
+            window.location.href = '/download_result?format=' + format;
+        });
+
+        // Back to Top button logic
+        const backToTopBtn = document.getElementById('backToTop');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                backToTopBtn.style.display = 'block';
+            } else {
+                backToTopBtn.style.display = 'none';
+            }
+        });
+        backToTopBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Auto-dismiss flash messages after 3 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.flash').forEach(el => {
+                el.style.transition = 'opacity 0.7s';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 700);
+            });
+        }, 3000);
+    </script>
+    {% if show_result and star_values %}
+    <script>
+        // Chart.js rendering if results are present
+        const chartLabels = [1, 2, 3, 4, 5]; // Stars
+        const chartValues = {{ star_values | tojson | safe }};
+        const data = {
+            labels: chartLabels.map(x => x + " ⭐"),
+            datasets: [{
+                label: 'Number of Feedbacks',
+                data: chartValues,
+                backgroundColor: [
+                    '#021024',
+                    '#052659',
+                    '#5483B3',
+                    '#7DA0CA',
+                    '#C1E8FF'
+                ],
+                borderColor: [
+                    '#021024',
+                    '#052659',
+                    '#5483B3',
+                    '#7DA0CA',
+                    '#C1E8FF'
+                ],
+                borderWidth: 2
+            }]
+        };
+        const config = {
+            type: 'bar',
+            data: data,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        };
+        if (Array.isArray(chartValues)) {
+            new Chart(document.getElementById('starChart'), config);
+        }
+    </script>
+    {% endif %}
+    {% if feedback_list %}
+    <script>
+        // Feedback filter logic
+        const feedbackList = {{ feedback_list|tojson|safe }};
+        const container = document.getElementById('filtered-feedbacks');
+        const filter = document.getElementById('sentiment-filter');
+
+        function renderFeedbacks(category) {
+            let filtered = feedbackList;
+            if (category && category !== 'all') {
+                filtered = feedbackList.filter(fb => fb.Sentiment === category);
+            }
+            if (filtered.length === 0) {
+                container.innerHTML = "<em>No feedbacks found for this category.</em>";
+                return;
+            }
+            let html = "<ul style='text-align:left;'>";
+            filtered.forEach(fb => {
+                html += `<li>${fb.Corrected}</li>`;
+            });
+            html += "</ul>";
+            container.innerHTML = html;
+        }
+
+        // Initial render (all)
+        renderFeedbacks('all');
+
+        // On filter change
+        filter.addEventListener('change', function() {
+            renderFeedbacks(this.value);
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

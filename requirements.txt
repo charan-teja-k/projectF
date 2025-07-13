@@ -1,0 +1,14 @@
+Flask
+Flask-Login
+Flask-Mail
+Flask-SQLAlchemy
+itsdangerous
+Werkzeug
+openai
+PyPDF2
+pandas
+nltk
+matplotlib
+openpyxl
+pymysql
+textblob
