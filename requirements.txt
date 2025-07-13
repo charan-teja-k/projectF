@@ -12,3 +12,4 @@ matplotlib
 openpyxl
 pymysql
 textblob
+python-dotenv
