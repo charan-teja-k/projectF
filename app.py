@@ -9,7 +9,6 @@ import io
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import smtplib
-
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -32,7 +31,9 @@ app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")     # Replace with your
 mail = Mail(app)
 
 # --- Configuration ---
-app.config['SECRET_KEY'] = 'your-secret-key'  # Replace with a strong secret key
+import os
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'Jaibalayya')  # Use environment variable or default value
+  # Replace with a strong secret key
 # mysql://avnadmin:AVNS_YnuYKaOcXuCNZSbe6Ls@mysql-8bf3a23-charantejak1123-1503.e.aivencloud.com:21887/defaultdb
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://avnadmin:AVNS_YnuYKaOcXuCNZSbe6Ls@mysql-8bf3a23-charantejak1123-1503.e.aivencloud.com:21887/defaultdb'  # Replace with your DB URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
