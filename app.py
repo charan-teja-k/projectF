@@ -8,6 +8,7 @@ import PyPDF2
 import io
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+import smtplib
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -22,11 +23,11 @@ import os
 app = Flask(__name__)
 
 # --- Mail Configuration ---
-app.config['MAIL_SERVER'] = 'smtp.example.com'  # Replace with your SMTP server
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'your-email@example.com'  # Replace with your email
-app.config['MAIL_PASSWORD'] = 'your-email-password'     # Replace with your email password
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME") # Replace with your email
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")     # Replace with your email password
 mail = Mail(app)
 
 # --- Configuration ---
@@ -123,31 +124,45 @@ def forgot_password():
         email = request.form['email']
         user = User.query.filter_by(email=email).first()
         if user:
+            # Generate token
             token = s.dumps(user.email, salt='password-reset-salt')
             reset_url = url_for('reset_password', token=token, _external=True)
 
-            msg = Message(subject="Password Reset Request",
-                          recipients=[user.email])
+            # Compose email
+            msg = Message(
+                subject="Password Reset Request",
+                sender=app.config['MAIL_USERNAME'],
+                recipients=[user.email]
+            )
             msg.body = f"""Hello,
 
-To reset your password, please click the link below:
+To reset your password, click the link below:
 
 {reset_url}
 
-If you did not request this password reset, please ignore this email.
+If you did not request this password reset, you can ignore this email.
 
 Thanks,
 Your App Team
 """
+
+            # Try sending email with full error logging
             try:
                 mail.send(msg)
                 flash('Password reset link has been sent to your email.', 'info')
+            except smtplib.SMTPAuthenticationError as auth_err:
+                print(f"❌ SMTP Authentication Error: {auth_err}")
+                flash('Email authentication failed. Check your app password.', 'danger')
+            except smtplib.SMTPException as smtp_err:
+                print(f"❌ SMTP Error: {smtp_err}")
+                flash('SMTP error occurred. Please try again.', 'danger')
             except Exception as e:
-                print(f"Failed to send email: {e}")
-                flash('Failed to send reset email. Please try again later.', 'danger')
+                print(f"❌ General Error: {e}")
+                flash('Something went wrong while sending email.', 'danger')
         else:
             flash('Email not found.', 'danger')
         return redirect(url_for('signin'))
+
     return render_template('forgot_password.html')
 
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
