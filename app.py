@@ -234,11 +234,15 @@ def generate_summary(text_list):
     prompt = (
         "Summarize the following customer feedback for a business report:\n\n"
         f"{combined_text}\n\n"
-        "Format:\n"
-        "- One-sentence executive summary.\n"
-        "- 3-5 bullet points highlighting key trends or issues.\n"
-        "- Brief recommendation or next steps.\n"
-        "Use a professional and engaging tone."
+        "Instructions:\n"
+        "- Do not include any introduction or explanation like 'Based on the provided customer feedback'.\n"
+        "- Directly start with the formatted summary.\n"
+        "- Format:\n"
+        "  • One-sentence executive summary.\n"
+        "  • 3 to 5 bullet points highlighting key trends or issues.\n"
+        "  • One brief recommendation or next step.\n"
+        "- Maximum of 10 lines in total.\n"
+        "- Use a professional, clear, and engaging tone."
     )
 
     try:
