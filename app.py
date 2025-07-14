@@ -138,14 +138,15 @@ def forgot_password():
             )
             msg.body = f"""Hello,
 
-To reset your password, click the link below:
+You're receiving this e-mail because you or someone else has requested a password reset for your user account at .
+
 
 {reset_url}
 
 If you did not request this password reset, you can ignore this email.
 
 Thanks,
-Your App Team
+Your feedback analyser Team (CHARAN)
 """
 
             # Try sending email with full error logging
