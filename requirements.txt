@@ -13,3 +13,4 @@ openpyxl
 pymysql
 textblob
 python-dotenv
+cryptography
