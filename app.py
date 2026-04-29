@@ -248,7 +248,7 @@ def generate_summary(text_list):
 
     try:
         response = client.chat.completions.create(
-            model="deepseek/deepseek-r1-0528:free",
+            model="poolside/laguna-m.1:free",
             messages=[
                 {"role": "user", "content": prompt}
             ]
